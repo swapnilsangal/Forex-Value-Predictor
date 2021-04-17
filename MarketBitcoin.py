@@ -1,3 +1,4 @@
+from datetime import datetime
 import datetime
 from datetime import timedelta
 from forex_python.bitcoin import BtcConverter
@@ -27,7 +28,30 @@ for key in dates:
     price = round(b.get_previous_price("INR", key), 1)
     prices.append(price)
     
-dataDict = {"Price" : prices, "Date" : dates}
+dataDict = {"PriceINR" : prices, "Date" : dates}
 #CSV
 df = pd.DataFrame(dataDict)
-df.to_csv("PricesOfBitcoin.csv")
+df.to_csv("Prices.csv")
+print(dataDict)
+#Adding Difference
+df["Difference"] = df["PriceINR"].diff()
+
+#Getting USD
+from datetime import datetime
+from forex_python.converter import CurrencyRates
+c = CurrencyRates()
+now = datetime.now()
+
+dollarRate = c.get_rate('USD', 'INR', now)
+
+df["PriceUSD"] = round(df["PriceINR"] / dollarRate, 1)
+print(df)
+
+#Plotting
+import matplotlib.pyplot as plt
+plt.plot(df["Date"], df["PriceUSD"])
+plt.title('LineGraph')
+plt.xlabel('Date')
+plt.ylabel('Price')
+plt.grid(True)
+plt.show()
